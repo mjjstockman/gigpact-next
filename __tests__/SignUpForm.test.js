@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import SignUpForm from '@/components/auth/SignUpForm';
 
 describe('SignUp Form', () => {
   it('renders email, password, confirm password inputs, and register button', () => {
