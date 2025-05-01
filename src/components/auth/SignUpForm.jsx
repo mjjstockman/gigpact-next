@@ -1,19 +1,28 @@
-function SignUpForm() {
+import React from 'react';
+import { useForm } from 'react-hook-form';
+
+const SignUpForm = () => {
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors }
+  } = useForm();
+
+  const onSubmit = (data) => {
+    console.log(data);
+  };
+
   return (
     <div className='flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8'>
       <div className='sm:mx-auto sm:w-full sm:max-w-sm'>
-        <img
-          alt='Your Company'
-          src='https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600'
-          className='mx-auto h-10 w-auto'
-        />
-        <h2 className='mt-10 text-center text-2xl font-bold tracking-tight text-gray-900'>
-          Create a new account
+        <h2 className='mt-10 text-center text-2xl font-bold text-gray-900'>
+          Sign up for an account
         </h2>
       </div>
 
       <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-sm'>
-        <form action='#' method='POST' className='space-y-6'>
+        <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
           {/* Username Field */}
           <div>
             <label
@@ -26,9 +35,14 @@ function SignUpForm() {
                 id='username'
                 name='username'
                 type='text'
-                required
-                className='input input-bordered w-full'
+                className='block w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:outline-indigo-600'
+                {...register('username', { required: 'Username is required' })}
               />
+              {errors.username && (
+                <p className='text-red-600 text-sm'>
+                  {errors.username.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -44,10 +58,12 @@ function SignUpForm() {
                 id='email'
                 name='email'
                 type='email'
-                required
-                autoComplete='email'
-                className='input input-bordered w-full'
+                className='block w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:outline-indigo-600'
+                {...register('email', { required: 'Email is required' })}
               />
+              {errors.email && (
+                <p className='text-red-600 text-sm'>{errors.email.message}</p>
+              )}
             </div>
           </div>
 
@@ -63,10 +79,14 @@ function SignUpForm() {
                 id='password'
                 name='password'
                 type='password'
-                required
-                autoComplete='new-password'
-                className='input input-bordered w-full'
+                className='block w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:outline-indigo-600'
+                {...register('password', { required: 'Password is required' })}
               />
+              {errors.password && (
+                <p className='text-red-600 text-sm'>
+                  {errors.password.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -82,33 +102,33 @@ function SignUpForm() {
                 id='confirmPassword'
                 name='confirmPassword'
                 type='password'
-                required
-                autoComplete='new-password'
-                className='input input-bordered w-full'
+                className='block w-full rounded-md border border-gray-300 p-2 text-gray-900 focus:outline-indigo-600'
+                {...register('confirmPassword', {
+                  required: 'Confirm your password',
+                  validate: (value) =>
+                    value === getValues('password') || 'Passwords must match'
+                })}
               />
+              {errors.confirmPassword && (
+                <p className='text-red-600 text-sm'>
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Sign Up Button */}
+          {/* Submit Button */}
           <div>
-            <button type='submit' className='btn btn-indigo w-full'>
+            <button
+              type='submit'
+              className='w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-500'>
               Sign Up
             </button>
           </div>
         </form>
-
-        {/* Login Link */}
-        <p className='mt-10 text-center text-sm text-gray-500'>
-          Already have an account?{' '}
-          <a
-            href='#'
-            className='font-semibold text-indigo-600 hover:text-indigo-500'>
-            Sign in here
-          </a>
-        </p>
       </div>
     </div>
   );
-}
+};
 
 export default SignUpForm;
