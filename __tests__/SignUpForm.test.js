@@ -26,4 +26,30 @@ describe('SignUp Form', () => {
       expect(screen.getByText(/confirm your password/i)).toBeInTheDocument();
     });
   });
+
+  test('shows error when passwords do not match', async () => {
+    render(<SignUpForm />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password321' }
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/passwords must match/i)).toBeInTheDocument();
+    });
+  });
 });
