@@ -52,4 +52,39 @@ describe('SignUp Form', () => {
       expect(screen.getByText(/passwords must match/i)).toBeInTheDocument();
     });
   });
+
+  test('submits form successfully when all fields are valid', async () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    render(<SignUpForm />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith({
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'password123',
+        confirmPassword: 'password123'
+      });
+    });
+
+    consoleSpy.mockRestore();
+  });
 });
