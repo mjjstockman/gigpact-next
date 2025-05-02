@@ -15,7 +15,7 @@ describe('SignUp Form', () => {
   });
 
   test('shows error messages when submitting empty form', async () => {
-    render(<SignUpForm />);
+    render(<SignUpForm onSubmit={() => {}} />);
 
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
@@ -32,7 +32,7 @@ describe('SignUp Form', () => {
   });
 
   test('shows error when passwords do not match', async () => {
-    render(<SignUpForm />);
+    render(<SignUpForm onSubmit={() => {}} />);
 
     fireEvent.input(screen.getByLabelText(/username/i), {
       target: { value: 'testuser' }
@@ -60,7 +60,7 @@ describe('SignUp Form', () => {
   test('submits form successfully when all fields are valid', async () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    render(<SignUpForm />);
+    render(<SignUpForm onSubmit={() => {}} />);
 
     fireEvent.input(screen.getByLabelText(/username/i), {
       target: { value: 'testuser' }
@@ -93,17 +93,21 @@ describe('SignUp Form', () => {
   });
 
   test('shows error when email format is invalid', async () => {
-    render(<SignUpForm />);
+    const mockOnSubmit = jest.fn();
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
 
     fireEvent.input(screen.getByLabelText(/username/i), {
       target: { value: 'testuser' }
     });
+
     fireEvent.input(screen.getByLabelText(/email/i), {
       target: { value: 'invalid-email' }
     });
+
     fireEvent.input(screen.getByLabelText(/^password$/i), {
       target: { value: 'password123' }
     });
+
     fireEvent.input(screen.getByLabelText(/confirm password/i), {
       target: { value: 'password123' }
     });
@@ -111,7 +115,11 @@ describe('SignUp Form', () => {
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+      expect(mockOnSubmit).not.toHaveBeenCalled();
     });
+
+    const emailError = await screen.findByText('Invalid email format');
+
+    expect(emailError).toBeInTheDocument();
   });
 });
