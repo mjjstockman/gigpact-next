@@ -10,7 +10,7 @@ const SignUpForm = ({ onSubmit }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [networkError, setNetworkError] = useState(''); 
+  const [networkError, setNetworkError] = useState('');
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -68,6 +68,11 @@ const SignUpForm = ({ onSubmit }) => {
           error.response.data.error === 'Username is already taken'
         ) {
           setErrors({ username: 'Username is already taken' });
+        } else if (
+          error.response &&
+          error.response.data.error === 'Email is already registered'
+        ) {
+          setErrors({ email: 'Email is already registered' });
         } else {
           setNetworkError(
             'We encountered an issue. Please check your connection and try again.'

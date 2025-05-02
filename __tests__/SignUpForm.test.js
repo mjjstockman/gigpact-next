@@ -327,7 +327,6 @@ describe('SignUp Form', () => {
     });
     fireEvent.click(signUpButton);
 
-    // Wait for the error message to appear
     await waitFor(() => {
       expect(
         screen.getByText(
@@ -335,5 +334,48 @@ describe('SignUp Form', () => {
         )
       ).toBeInTheDocument();
     });
+  });
+
+  test('shows error when email is already registered', async () => {
+    const mockOnSubmit = jest.fn();
+    const emailTaken = 'test@example.com';
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: emailTaken }
+    });
+
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    const mockResponse = {
+      response: {
+        data: {
+          error: 'Email is already registered'
+        }
+      }
+    };
+
+    mockOnSubmit.mockRejectedValueOnce(mockResponse);
+
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
+
+    const errorMessage = await screen.findByText(
+      /email is already registered/i
+    );
+    expect(errorMessage).toBeInTheDocument();
   });
 });
