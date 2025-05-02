@@ -9,9 +9,11 @@ const SignUpForm = ({ onSubmit }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     // Validation
     const newErrors = {};
@@ -34,13 +36,26 @@ const SignUpForm = ({ onSubmit }) => {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setIsSubmitting(false);
       return;
     }
 
     // Clear errors and call the onSubmit prop if validation passes
     setErrors({});
-    onSubmit(formData); // Submit the form
-    console.log(formData); // Log the form data without the "Submitted data:" prefix
+
+    try {
+      await onSubmit(formData);
+      console.log(formData); // Log the form data
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data.error === 'Username is already taken'
+      ) {
+        setErrors({ username: 'Username is already taken' });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -96,7 +111,9 @@ const SignUpForm = ({ onSubmit }) => {
         />
         {errors.confirmPassword && <p role='alert'>{errors.confirmPassword}</p>}
       </div>
-      <button type='submit'>Sign Up</button>
+      <button type='submit' disabled={isSubmitting}>
+        Sign Up
+      </button>
     </form>
   );
 };

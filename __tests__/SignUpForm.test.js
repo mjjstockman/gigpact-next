@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act
+} from '@testing-library/react';
 import SignUpForm from '@/components/auth/SignUpForm';
 
 describe('SignUp Form', () => {
@@ -121,5 +127,43 @@ describe('SignUp Form', () => {
     const emailError = await screen.findByText('Invalid email format');
 
     expect(emailError).toBeInTheDocument();
+  });
+
+  test('shows error when username is already taken', async () => {
+    const mockOnSubmit = jest.fn();
+    const usernameTaken = 'testuser';
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: usernameTaken }
+    });
+
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    const mockResponse = {
+      response: {
+        data: {
+          error: 'Username is already taken'
+        }
+      }
+    };
+
+    mockOnSubmit.mockRejectedValueOnce(mockResponse);
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    const errorMessage = await screen.findByText(/username is already taken/i);
+    expect(errorMessage).toBeInTheDocument();
   });
 });
