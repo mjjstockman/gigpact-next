@@ -140,7 +140,6 @@ describe('SignUp Form', () => {
     });
 
     const emailError = await screen.findByText('Invalid email format');
-
     expect(emailError).toBeInTheDocument();
   });
 
@@ -251,5 +250,43 @@ describe('SignUp Form', () => {
     await waitFor(() => {
       expect(submitButton).not.toBeDisabled();
     });
+  });
+
+  test('resets the form after successful submission', async () => {
+    const mockOnSubmit = jest.fn(() => Promise.resolve());
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalledWith({
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'password123',
+        confirmPassword: 'password123'
+      });
+    });
+
+    expect(screen.getByLabelText(/username/i).value).toBe('');
+    expect(screen.getByLabelText(/email/i).value).toBe('');
+    expect(screen.getByLabelText(/^password$/i).value).toBe('');
+    expect(screen.getByLabelText(/confirm password/i).value).toBe('');
   });
 });

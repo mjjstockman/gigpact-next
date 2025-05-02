@@ -13,7 +13,7 @@ const SignUpForm = ({ onSubmit }) => {
 
   useEffect(() => {
     console.log('SignUpForm rendered'); // Logs once when the form first mounts
-  }, []); // Ensures this only runs once (on mount)
+  }, []);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -23,50 +23,61 @@ const SignUpForm = ({ onSubmit }) => {
     }));
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
 
-    const newErrors = {};
-    if (!formData.username) newErrors.username = 'Username is required';
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password must be at least 8 characters';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords must match';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setIsSubmitting(false);
-      return;
-    }
-
-    setErrors({});
-
-    try {
-      await onSubmit(formData);
-      console.log(formData);
-    } catch (error) {
-      if (
-        error.response &&
-        error.response.data.error === 'Username is already taken'
-      ) {
-        setErrors({ username: 'Username is already taken' });
+      const newErrors = {};
+      if (!formData.username) newErrors.username = 'Username is required';
+      if (!formData.email) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = 'Invalid email format';
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      if (!formData.password) {
+        newErrors.password = 'Password must be at least 8 characters';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords must match';
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        setIsSubmitting(false);
+        return;
+      }
+
+      setErrors({});
+
+      try {
+        await onSubmit(formData);
+        console.log(formData);
+
+        // Reset the form data after successful submission
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.data.error === 'Username is already taken'
+        ) {
+          setErrors({ username: 'Username is already taken' });
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, onSubmit]
+  );
 
   return (
     <div className='relative'>
