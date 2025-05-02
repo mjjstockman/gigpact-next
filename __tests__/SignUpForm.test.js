@@ -195,4 +195,39 @@ describe('SignUp Form', () => {
       expect(mockOnSubmit).toHaveBeenCalled();
     });
   });
+
+  test('submit button is disabled while submitting', async () => {
+    const mockOnSubmit = jest.fn(
+      () => new Promise((resolve) => setTimeout(resolve, 500))
+    );
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    const submitButton = screen.getByRole('button', { name: /sign up/i });
+
+    fireEvent.click(submitButton);
+
+    expect(submitButton).toBeDisabled();
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(submitButton).not.toBeDisabled();
+    });
+  });
 });
