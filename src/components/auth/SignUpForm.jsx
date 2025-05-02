@@ -15,7 +15,6 @@ const SignUpForm = ({ onSubmit }) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validation
     const newErrors = {};
     if (!formData.username) newErrors.username = 'Username is required';
     if (!formData.email) {
@@ -40,12 +39,11 @@ const SignUpForm = ({ onSubmit }) => {
       return;
     }
 
-    // Clear errors and call the onSubmit prop if validation passes
     setErrors({});
 
     try {
       await onSubmit(formData);
-      console.log(formData); // Log the form data
+      console.log(formData);
     } catch (error) {
       if (
         error.response &&
@@ -66,55 +64,93 @@ const SignUpForm = ({ onSubmit }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div>
-        <label htmlFor='username'>Username</label>
-        <input
-          id='username'
-          name='username'
-          type='text'
-          value={formData.username}
-          onChange={handleChange}
-        />
-        {errors.username && <p role='alert'>{errors.username}</p>}
-      </div>
-      <div>
-        <label htmlFor='email'>Email</label>
-        <input
-          id='email'
-          name='email'
-          type='email'
-          value={formData.email}
-          onChange={handleChange}
-        />
-        {errors.email && <p role='alert'>{errors.email}</p>}
-      </div>
-      <div>
-        <label htmlFor='password'>Password</label>
-        <input
-          id='password'
-          name='password'
-          type='password'
-          value={formData.password}
-          onChange={handleChange}
-        />
-        {errors.password && <p role='alert'>{errors.password}</p>}
-      </div>
-      <div>
-        <label htmlFor='confirmPassword'>Confirm Password</label>
-        <input
-          id='confirmPassword'
-          name='confirmPassword'
-          type='password'
-          value={formData.confirmPassword}
-          onChange={handleChange}
-        />
-        {errors.confirmPassword && <p role='alert'>{errors.confirmPassword}</p>}
-      </div>
-      <button type='submit' disabled={isSubmitting}>
-        Sign Up
-      </button>
-    </form>
+    <div className='relative'>
+      <form onSubmit={handleSubmit} noValidate className='space-y-4'>
+        <div>
+          <label htmlFor='username'>Username</label>
+          <input
+            id='username'
+            name='username'
+            type='text'
+            value={formData.username}
+            onChange={handleChange}
+            className='input input-bordered w-full'
+            disabled={isSubmitting}
+          />
+          {errors.username && (
+            <p role='alert' className='text-red-500'>
+              {errors.username}
+            </p>
+          )}
+        </div>
+        <div>
+          <label htmlFor='email'>Email</label>
+          <input
+            id='email'
+            name='email'
+            type='email'
+            value={formData.email}
+            onChange={handleChange}
+            className='input input-bordered w-full'
+            disabled={isSubmitting}
+          />
+          {errors.email && (
+            <p role='alert' className='text-red-500'>
+              {errors.email}
+            </p>
+          )}
+        </div>
+        <div>
+          <label htmlFor='password'>Password</label>
+          <input
+            id='password'
+            name='password'
+            type='password'
+            value={formData.password}
+            onChange={handleChange}
+            className='input input-bordered w-full'
+            disabled={isSubmitting}
+          />
+          {errors.password && (
+            <p role='alert' className='text-red-500'>
+              {errors.password}
+            </p>
+          )}
+        </div>
+        <div>
+          <label htmlFor='confirmPassword'>Confirm Password</label>
+          <input
+            id='confirmPassword'
+            name='confirmPassword'
+            type='password'
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className='input input-bordered w-full'
+            disabled={isSubmitting}
+          />
+          {errors.confirmPassword && (
+            <p role='alert' className='text-red-500'>
+              {errors.confirmPassword}
+            </p>
+          )}
+        </div>
+        <button
+          type='submit'
+          className='btn btn-primary w-full'
+          disabled={isSubmitting}>
+          Sign Up
+        </button>
+      </form>
+
+      {isSubmitting && (
+        <div
+          data-testid='spinner-overlay'
+          className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='loading loading-spinner loading-lg text-primary'></div>
+          <span className='sr-only'>Loading...</span>
+        </div>
+      )}
+    </div>
   );
 };
 

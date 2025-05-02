@@ -166,4 +166,33 @@ describe('SignUp Form', () => {
     const errorMessage = await screen.findByText(/username is already taken/i);
     expect(errorMessage).toBeInTheDocument();
   });
+
+  test('displays spinner overlay during form submission', async () => {
+    const mockOnSubmit = jest.fn(
+      () => new Promise((resolve) => setTimeout(resolve, 500))
+    );
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(screen.getByTestId('spinner-overlay')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockOnSubmit).toHaveBeenCalled();
+    });
+  });
 });
