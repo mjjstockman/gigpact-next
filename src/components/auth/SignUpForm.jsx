@@ -10,10 +10,7 @@ const SignUpForm = ({ onSubmit }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    console.log('SignUpForm rendered'); // Logs once when the form first mounts
-  }, []);
+  const [networkError, setNetworkError] = useState(''); 
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -27,6 +24,7 @@ const SignUpForm = ({ onSubmit }) => {
     async (e) => {
       e.preventDefault();
       setIsSubmitting(true);
+      setNetworkError('');
 
       const newErrors = {};
       if (!formData.username) newErrors.username = 'Username is required';
@@ -58,7 +56,6 @@ const SignUpForm = ({ onSubmit }) => {
         await onSubmit(formData);
         console.log(formData);
 
-        // Reset the form data after successful submission
         setFormData({
           username: '',
           email: '',
@@ -71,6 +68,10 @@ const SignUpForm = ({ onSubmit }) => {
           error.response.data.error === 'Username is already taken'
         ) {
           setErrors({ username: 'Username is already taken' });
+        } else {
+          setNetworkError(
+            'We encountered an issue. Please check your connection and try again.'
+          );
         }
       } finally {
         setIsSubmitting(false);
@@ -81,6 +82,11 @@ const SignUpForm = ({ onSubmit }) => {
 
   return (
     <div className='relative'>
+      {networkError && (
+        <div role='alert' className='text-red-500'>
+          {networkError}
+        </div>
+      )}
       <form onSubmit={handleSubmit} noValidate className='space-y-4'>
         <div>
           <label htmlFor='username'>Username</label>

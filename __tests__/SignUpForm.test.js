@@ -289,4 +289,51 @@ describe('SignUp Form', () => {
     expect(screen.getByLabelText(/^password$/i).value).toBe('');
     expect(screen.getByLabelText(/confirm password/i).value).toBe('');
   });
+
+  test('shows a network error message when there is a network issue', async () => {
+    const mockOnSubmit = jest.fn();
+
+    // Simulate a network error by rejecting the promise in mockOnSubmit
+    const mockResponse = {
+      response: {
+        data: {
+          error: 'Network error'
+        }
+      }
+    };
+
+    mockOnSubmit.mockRejectedValueOnce(mockResponse);
+
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+    fireEvent.input(screen.getByLabelText(/username/i), {
+      target: { value: 'testuser' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/email/i), {
+      target: { value: 'test@example.com' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/^password$/i), {
+      target: { value: 'password123' }
+    });
+
+    fireEvent.input(screen.getByLabelText(/confirm password/i), {
+      target: { value: 'password123' }
+    });
+
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
+
+    // Wait for the error message to appear
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /We encountered an issue. Please check your connection and try again./i
+        )
+      ).toBeInTheDocument();
+    });
+  });
 });
