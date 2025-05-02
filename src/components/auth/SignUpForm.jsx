@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const SignUpForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -10,6 +10,18 @@ const SignUpForm = ({ onSubmit }) => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    console.log('SignUpForm rendered'); // Logs once when the form first mounts
+  }, []); // Ensures this only runs once (on mount)
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,13 +66,6 @@ const SignUpForm = ({ onSubmit }) => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
   };
 
   return (

@@ -21,9 +21,13 @@ describe('SignUp Form', () => {
   });
 
   test('shows error messages when submitting empty form', async () => {
-    render(<SignUpForm onSubmit={() => {}} />);
+    const mockOnSubmit = jest.fn();
+    render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
     await waitFor(() => {
       expect(screen.getByText(/username is required/i)).toBeInTheDocument();
@@ -35,10 +39,12 @@ describe('SignUp Form', () => {
         screen.getByText(/please confirm your password/i)
       ).toBeInTheDocument();
     });
+
+    expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
   test('shows error when passwords do not match', async () => {
-    render(<SignUpForm onSubmit={() => {}} />);
+    render(<SignUpForm onSubmit={jest.fn()} />);
 
     fireEvent.input(screen.getByLabelText(/username/i), {
       target: { value: 'testuser' }
@@ -56,7 +62,10 @@ describe('SignUp Form', () => {
       target: { value: 'password321' }
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
     await waitFor(() => {
       expect(screen.getByText(/passwords must match/i)).toBeInTheDocument();
@@ -66,7 +75,7 @@ describe('SignUp Form', () => {
   test('submits form successfully when all fields are valid', async () => {
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    render(<SignUpForm onSubmit={() => {}} />);
+    render(<SignUpForm onSubmit={jest.fn()} />);
 
     fireEvent.input(screen.getByLabelText(/username/i), {
       target: { value: 'testuser' }
@@ -84,7 +93,10 @@ describe('SignUp Form', () => {
       target: { value: 'password123' }
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
     await waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith({
@@ -118,7 +130,10 @@ describe('SignUp Form', () => {
       target: { value: 'password123' }
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
@@ -161,7 +176,10 @@ describe('SignUp Form', () => {
 
     mockOnSubmit.mockRejectedValueOnce(mockResponse);
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
     const errorMessage = await screen.findByText(/username is already taken/i);
     expect(errorMessage).toBeInTheDocument();
@@ -187,8 +205,12 @@ describe('SignUp Form', () => {
       target: { value: 'password123' }
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+    const signUpButton = await screen.findByRole('button', {
+      name: /sign up/i
+    });
+    fireEvent.click(signUpButton);
 
+    // Ensure spinner is shown
     expect(screen.getByTestId('spinner-overlay')).toBeInTheDocument();
 
     await waitFor(() => {
