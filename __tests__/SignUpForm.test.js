@@ -8,374 +8,320 @@ import {
 import SignUpForm from '@/components/auth/SignUpForm';
 
 describe('SignUp Form', () => {
-  it('renders username, email, password, confirm password inputs, and register button', () => {
-    render(<SignUpForm />);
+  describe('Rendering', () => {
+    it('renders username, email, password, confirm password inputs, and register button', () => {
+      render(<SignUpForm />);
 
-    expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Sign Up/i })
-    ).toBeInTheDocument();
-  });
-
-  test('shows error messages when submitting empty form', async () => {
-    const mockOnSubmit = jest.fn();
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/username is required/i)).toBeInTheDocument();
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/password must be at least 8 characters/i)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/please confirm your password/i)
+        screen.getByRole('button', { name: /Sign Up/i })
       ).toBeInTheDocument();
     });
-
-    expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
-  test('shows error when passwords do not match', async () => {
-    render(<SignUpForm onSubmit={jest.fn()} />);
+  describe('Form Submission', () => {
+    test('submits form successfully when all fields are valid', async () => {
+      const consoleSpy = jest
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+      render(<SignUpForm onSubmit={jest.fn()} />);
 
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
+
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith({
+          username: 'testuser',
+          email: 'test@example.com',
+          password: 'password123',
+          confirmPassword: 'password123'
+        });
+      });
+      consoleSpy.mockRestore();
     });
 
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
+    test('displays spinner overlay during form submission', async () => {
+      const mockOnSubmit = jest.fn(
+        () => new Promise((resolve) => setTimeout(resolve, 500))
+      );
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
+
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
+
+      expect(screen.getByTestId('spinner-overlay')).toBeInTheDocument();
+      await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled());
     });
 
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
+    test('submit button is disabled while submitting', async () => {
+      const mockOnSubmit = jest.fn(
+        () => new Promise((resolve) => setTimeout(resolve, 500))
+      );
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
+
+      const submitButton = screen.getByRole('button', { name: /sign up/i });
+      fireEvent.click(submitButton);
+
+      expect(submitButton).toBeDisabled();
+      await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled());
+      await waitFor(() => expect(submitButton).not.toBeDisabled());
     });
 
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password321' }
-    });
+    test('resets the form after successful submission', async () => {
+      const mockOnSubmit = jest.fn(() => Promise.resolve());
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
 
-    await waitFor(() => {
-      expect(screen.getByText(/passwords must match/i)).toBeInTheDocument();
-    });
-  });
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
 
-  test('submits form successfully when all fields are valid', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-
-    render(<SignUpForm onSubmit={jest.fn()} />);
-
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123',
-        confirmPassword: 'password123'
+      await waitFor(() => expect(mockOnSubmit).toHaveBeenCalled());
+      await waitFor(() => {
+        expect(screen.getByLabelText(/username/i).value).toBe('');
+        expect(screen.getByLabelText(/email/i).value).toBe('');
+        expect(screen.getByLabelText(/^password$/i).value).toBe('');
+        expect(screen.getByLabelText(/confirm password/i).value).toBe('');
       });
     });
-
-    consoleSpy.mockRestore();
   });
 
-  test('shows error when email format is invalid', async () => {
-    const mockOnSubmit = jest.fn();
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
+  describe('Input Validation Errors', () => {
+    test('shows error messages when submitting empty form', async () => {
+      const mockOnSubmit = jest.fn();
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
 
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'invalid-email' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
+      await waitFor(() => {
+        expect(screen.getByText(/username is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/password must be at least 8 characters/i)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(/please confirm your password/i)
+        ).toBeInTheDocument();
+      });
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
-    const emailError = await screen.findByText('Invalid email format');
-    expect(emailError).toBeInTheDocument();
-  });
+    test('shows error when passwords do not match', async () => {
+      render(<SignUpForm onSubmit={jest.fn()} />);
 
-  test('shows error when username is already taken', async () => {
-    const mockOnSubmit = jest.fn();
-    const usernameTaken = 'testuser';
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password321' }
+      });
 
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
 
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: usernameTaken }
+      await waitFor(() =>
+        expect(screen.getByText(/passwords must match/i)).toBeInTheDocument()
+      );
     });
 
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
+    test('shows error when email format is invalid', async () => {
+      const mockOnSubmit = jest.fn();
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'invalid-email' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
 
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
 
-    const mockResponse = {
-      response: {
-        data: {
-          error: 'Username is already taken'
-        }
-      }
-    };
-
-    mockOnSubmit.mockRejectedValueOnce(mockResponse);
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    const errorMessage = await screen.findByText(/username is already taken/i);
-    expect(errorMessage).toBeInTheDocument();
-  });
-
-  test('displays spinner overlay during form submission', async () => {
-    const mockOnSubmit = jest.fn(
-      () => new Promise((resolve) => setTimeout(resolve, 500))
-    );
-
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
-
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    // Ensure spinner is shown
-    expect(screen.getByTestId('spinner-overlay')).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalled();
+      await waitFor(() => expect(mockOnSubmit).not.toHaveBeenCalled());
+      const emailError = await screen.findByText('Invalid email format');
+      expect(emailError).toBeInTheDocument();
     });
   });
 
-  test('submit button is disabled while submitting', async () => {
-    const mockOnSubmit = jest.fn(
-      () => new Promise((resolve) => setTimeout(resolve, 500))
-    );
+  describe('Server-Side Errors', () => {
+    test('shows error when username is already taken', async () => {
+      const mockOnSubmit = jest.fn();
+      const usernameTaken = 'testuser';
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: usernameTaken }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
 
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
+      const mockResponse = {
+        response: { data: { error: 'Username is already taken' } }
+      };
+      mockOnSubmit.mockRejectedValueOnce(mockResponse);
 
-    const submitButton = screen.getByRole('button', { name: /sign up/i });
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
 
-    fireEvent.click(submitButton);
-
-    expect(submitButton).toBeDisabled();
-
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(submitButton).not.toBeDisabled();
-    });
-  });
-
-  test('resets the form after successful submission', async () => {
-    const mockOnSubmit = jest.fn(() => Promise.resolve());
-
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
-
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
+      const errorMessage = await screen.findByText(
+        /username is already taken/i
+      );
+      expect(errorMessage).toBeInTheDocument();
     });
 
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
+    test('shows error when email is already registered', async () => {
+      const mockOnSubmit = jest.fn();
+      const emailTaken = 'test@example.com';
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123',
-        confirmPassword: 'password123'
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: emailTaken }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
+
+      const mockResponse = {
+        response: { data: { error: 'Email is already registered' } }
+      };
+      mockOnSubmit.mockRejectedValueOnce(mockResponse);
+
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
+
+      const errorMessage = await screen.findByText(
+        /email is already registered/i
+      );
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    test('shows a network error message when there is a network issue', async () => {
+      const mockOnSubmit = jest.fn();
+      const mockResponse = { response: { data: { error: 'Network error' } } };
+      mockOnSubmit.mockRejectedValueOnce(mockResponse);
+      render(<SignUpForm onSubmit={mockOnSubmit} />);
+
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'password123' }
+      });
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'password123' }
+      });
+
+      const signUpButton = await screen.findByRole('button', {
+        name: /sign up/i
+      });
+      fireEvent.click(signUpButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            /We encountered an issue. Please check your connection and try again./i
+          )
+        ).toBeInTheDocument();
       });
     });
-
-    expect(screen.getByLabelText(/username/i).value).toBe('');
-    expect(screen.getByLabelText(/email/i).value).toBe('');
-    expect(screen.getByLabelText(/^password$/i).value).toBe('');
-    expect(screen.getByLabelText(/confirm password/i).value).toBe('');
-  });
-
-  test('shows a network error message when there is a network issue', async () => {
-    const mockOnSubmit = jest.fn();
-
-    // Simulate a network error by rejecting the promise in mockOnSubmit
-    const mockResponse = {
-      response: {
-        data: {
-          error: 'Network error'
-        }
-      }
-    };
-
-    mockOnSubmit.mockRejectedValueOnce(mockResponse);
-
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
-
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: 'test@example.com' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          /We encountered an issue. Please check your connection and try again./i
-        )
-      ).toBeInTheDocument();
-    });
-  });
-
-  test('shows error when email is already registered', async () => {
-    const mockOnSubmit = jest.fn();
-    const emailTaken = 'test@example.com';
-
-    render(<SignUpForm onSubmit={mockOnSubmit} />);
-
-    fireEvent.input(screen.getByLabelText(/username/i), {
-      target: { value: 'testuser' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: emailTaken }
-    });
-
-    fireEvent.input(screen.getByLabelText(/^password$/i), {
-      target: { value: 'password123' }
-    });
-
-    fireEvent.input(screen.getByLabelText(/confirm password/i), {
-      target: { value: 'password123' }
-    });
-
-    const mockResponse = {
-      response: {
-        data: {
-          error: 'Email is already registered'
-        }
-      }
-    };
-
-    mockOnSubmit.mockRejectedValueOnce(mockResponse);
-
-    const signUpButton = await screen.findByRole('button', {
-      name: /sign up/i
-    });
-    fireEvent.click(signUpButton);
-
-    const errorMessage = await screen.findByText(
-      /email is already registered/i
-    );
-    expect(errorMessage).toBeInTheDocument();
   });
 });
