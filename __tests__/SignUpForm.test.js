@@ -366,5 +366,33 @@ describe('SignUp Form', () => {
         ).toBeInTheDocument();
       });
     });
+
+    test('shows error when password does not contain a number', async () => {
+      render(<SignUpForm onSubmit={jest.fn()} />);
+
+      fireEvent.input(screen.getByLabelText(/username/i), {
+        target: { value: 'testuser' }
+      });
+
+      fireEvent.input(screen.getByLabelText(/email/i), {
+        target: { value: 'test@example.com' }
+      });
+
+      fireEvent.input(screen.getByLabelText(/^password$/i), {
+        target: { value: 'Password!' } // has uppercase, lowercase, special char but no number
+      });
+
+      fireEvent.input(screen.getByLabelText(/confirm password/i), {
+        target: { value: 'Password!' }
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/password must contain at least one number/i)
+        ).toBeInTheDocument();
+      });
+    });
   });
 });
