@@ -2,18 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-const signUpSchema = z
-  .object({
-    username: z.string().min(1, 'Username is required'),
-    email: z.string().min(1, 'Email is required').email('Invalid email format'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password')
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords must match',
-    path: ['confirmPassword']
-  });
+// import signUpSchema from '@/schemas/signUpSchema';
+import { signUpSchema } from '@/schemas/signUpSchema';
 
 export default function SignUpForm({ onSubmit }) {
   const [networkError, setNetworkError] = useState('');
@@ -23,7 +13,7 @@ export default function SignUpForm({ onSubmit }) {
     reset,
     formState: { errors, isSubmitting }
   } = useForm({
-    resolver: zodResolver(signUpSchema)
+    resolver: zodResolver(signUpSchema) // Use the imported schema
   });
 
   const onFormSubmit = async (data) => {
