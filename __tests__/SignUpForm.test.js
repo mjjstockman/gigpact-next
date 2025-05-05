@@ -383,4 +383,16 @@ describe('SignUp Form', () => {
       });
     });
   });
+  describe('Accessibility & UX Enhancements', () => {
+    it('focuses the first invalid input on submit', async () => {
+      render(<SignUpForm onSubmit={jest.fn()} />);
+  
+      const submitButton = screen.getByRole('button', { name: /sign up/i });
+      await userEvent.click(submitButton);
+  
+      const usernameInput = screen.getByLabelText(/username/i);
+      expect(document.activeElement).toBe(usernameInput);
+    });
+  });
+  
 });

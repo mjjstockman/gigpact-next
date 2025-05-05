@@ -12,7 +12,8 @@ export default function SignUpForm({ onSubmit }) {
     reset,
     formState: { errors, isSubmitting }
   } = useForm({
-    resolver: zodResolver(signUpSchema) 
+    resolver: zodResolver(signUpSchema),
+    mode: 'onBlur' 
   });
 
   const onFormSubmit = async (data) => {
