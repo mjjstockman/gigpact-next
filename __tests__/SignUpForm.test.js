@@ -387,11 +387,20 @@ describe('SignUp Form', () => {
     it('focuses the first invalid input on submit', async () => {
       render(<SignUpForm onSubmit={jest.fn()} />);
   
+      const usernameInput = screen.getByLabelText(/username/i);
+      await userEvent.type(usernameInput, 'validusername');
+  
+      const emailInput = screen.getByLabelText(/email/i);
+      await userEvent.type(emailInput, 'invalidemail');
+  
       const submitButton = screen.getByRole('button', { name: /sign up/i });
       await userEvent.click(submitButton);
   
-      const usernameInput = screen.getByLabelText(/username/i);
-      expect(document.activeElement).toBe(usernameInput);
+      await waitFor(() => {
+        expect(document.activeElement).toBe(emailInput);  // Email input should be focused as it is the first invalid field
+      });
+  
+      expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
     });
   });
   
