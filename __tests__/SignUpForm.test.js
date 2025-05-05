@@ -54,6 +54,26 @@ describe('SignUp Form', () => {
       );
     });
 
+    it('displays a success message after successful submission', async () => {
+      const mockSubmit = jest.fn().mockResolvedValueOnce(); // simulate success
+  
+      render(<SignUpForm onSubmit={mockSubmit} />);
+  
+      // Fill out form with valid data
+      await userEvent.type(screen.getByLabelText(/username/i), 'validuser');
+      await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com');
+      await userEvent.type(screen.getByTestId('password-input'), 'Password1!');
+await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
+
+  
+      // Submit form
+      await userEvent.click(screen.getByRole('button', { name: /sign up/i }));
+  
+      // Wait for success message to appear
+      const successMessage = await screen.findByRole('alert');
+      expect(successMessage).toHaveTextContent('Account created successfully!');
+    });
+
     it('shows error when email format is invalid', async () => {
       const mockOnSubmit = jest.fn();
       render(<SignUpForm onSubmit={mockOnSubmit} />);
@@ -397,8 +417,7 @@ describe('SignUp Form', () => {
       await userEvent.click(submitButton);
   
       await waitFor(() => {
-        expect(document.activeElement).toBe(emailInput);  // Email input should be focused as it is the first invalid field
-      });
+        expect(document.activeElement).toBe(emailInput);  
   
       expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
     });

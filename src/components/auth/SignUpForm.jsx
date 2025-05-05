@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signUpSchema } from '@/schemas/signUpSchema'; 
+import { signUpSchema } from '@/schemas/signUpSchema';
 
 export default function SignUpForm({ onSubmit }) {
   const [networkError, setNetworkError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  
   const {
     register,
     handleSubmit,
@@ -13,14 +14,16 @@ export default function SignUpForm({ onSubmit }) {
     formState: { errors, isSubmitting }
   } = useForm({
     resolver: zodResolver(signUpSchema),
-    mode: 'onBlur' 
+    mode: 'onBlur'
   });
 
   const onFormSubmit = async (data) => {
     setNetworkError('');
+    setSuccessMessage('');
     try {
-      await onSubmit(data); 
-      reset(); 
+      await onSubmit(data);
+      reset();
+      setSuccessMessage('Account created successfully!');
     } catch (err) {
       const message =
         err?.response?.data?.error ||
@@ -36,11 +39,13 @@ export default function SignUpForm({ onSubmit }) {
         <input id='username' {...register('username')} onBlur={() => {}} />
         {errors.username && <p>{errors.username.message}</p>}
       </div>
+
       <div>
         <label htmlFor='email'>Email</label>
         <input id='email' {...register('email')} onBlur={() => {}} />
         {errors.email && <p>{errors.email.message}</p>}
       </div>
+
       <div>
         <label htmlFor='password'>Password</label>
         <input
@@ -52,6 +57,7 @@ export default function SignUpForm({ onSubmit }) {
         />
         {errors.password && <p>{errors.password.message}</p>}
       </div>
+
       <div>
         <label htmlFor='confirmPassword'>Confirm Password</label>
         <input
@@ -63,10 +69,19 @@ export default function SignUpForm({ onSubmit }) {
         />
         {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
       </div>
-      {networkError && <p>{networkError}</p>}
+
+      {networkError && (
+        <p role="alert" data-testid="network-error">{networkError}</p>
+      )}
+
+      {successMessage && (
+        <p role="alert" data-testid="success-message">{successMessage}</p>
+      )}
+
       <button type='submit' disabled={isSubmitting}>
         Sign Up
       </button>
+
       {isSubmitting && (
         <div data-testid='spinner-overlay'>
           <p>Submitting...</p>
