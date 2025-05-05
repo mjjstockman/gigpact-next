@@ -403,6 +403,7 @@ await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
       });
     });
   });
+
   describe('Accessibility & UX Enhancements', () => {
     it('focuses the first invalid input on submit', async () => {
       render(<SignUpForm onSubmit={jest.fn()} />);
@@ -417,10 +418,12 @@ await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
       await userEvent.click(submitButton);
   
       await waitFor(() => {
-        expect(document.activeElement).toBe(emailInput);  
+        expect(document.activeElement).toBe(emailInput); 
   
-      expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+        expect(screen.getByText(/invalid email/i)).toBeInTheDocument();
+      });
     });
   });
+  
   
 });
