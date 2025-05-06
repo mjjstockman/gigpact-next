@@ -1,3 +1,4 @@
+
 import {
   render,
   screen,
@@ -6,9 +7,6 @@ import {
   act
 } from '@testing-library/react';
 import SignUpForm from '@/components/auth/SignUpForm';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { signUpSchema } from '@/schemas/signUpSchema';
 import userEvent from '@testing-library/user-event';
 
@@ -43,7 +41,6 @@ describe('SignUp Form', () => {
 
       await userEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
-      // Wait for async form submission
       await waitFor(() =>
         expect(mockSubmit).toHaveBeenCalledWith({
           username: 'testuser',
@@ -52,27 +49,27 @@ describe('SignUp Form', () => {
           confirmPassword: 'Password1!'
         })
       );
-    });
+    }); 
 
+ 
     it('displays a success message after successful submission', async () => {
-      const mockSubmit = jest.fn().mockResolvedValueOnce(); // simulate success
+      const mockSubmit = jest.fn().mockResolvedValueOnce(); 
   
       render(<SignUpForm onSubmit={mockSubmit} />);
   
-      // Fill out form with valid data
       await userEvent.type(screen.getByLabelText(/username/i), 'validuser');
       await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com');
       await userEvent.type(screen.getByTestId('password-input'), 'Password1!');
-await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
-
-  
-      // Submit form
+      await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
       await userEvent.click(screen.getByRole('button', { name: /sign up/i }));
   
-      // Wait for success message to appear
       const successMessage = await screen.findByRole('alert');
       expect(successMessage).toHaveTextContent('Account created successfully!');
     });
+  });
+
+
+  
 
     it('shows error when email format is invalid', async () => {
       const mockOnSubmit = jest.fn();
@@ -142,7 +139,6 @@ await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
 
       render(<SignUpForm onSubmit={mockOnSubmit} />);
 
-      // Fill out the form
       fireEvent.change(screen.getByLabelText(/username/i), {
         target: { value: 'testuser' }
       });
@@ -261,7 +257,7 @@ await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
         expect(screen.getByLabelText(/confirm password/i).value).toBe('');
       });
     });
-  });
+  
 
   describe('Input Validation Errors', () => {
     test('shows error messages when submitting empty form', async () => {
@@ -426,4 +422,5 @@ await userEvent.type(screen.getByTestId('confirmPassword-input'), 'Password1!');
   });
   
   
+
 });
