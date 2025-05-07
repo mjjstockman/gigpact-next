@@ -1,4 +1,3 @@
-
 import {
   render,
   screen,
@@ -67,9 +66,6 @@ describe('SignUp Form', () => {
       expect(successMessage).toHaveTextContent('Account created successfully!');
     });
   });
-
-
-  
 
     it('shows error when email format is invalid', async () => {
       const mockOnSubmit = jest.fn();
@@ -420,7 +416,4 @@ describe('SignUp Form', () => {
       });
     });
   });
-  
-  
-
 });
