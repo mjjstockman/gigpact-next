@@ -1,5 +1,5 @@
 'use client'; // if you're inside app/ directory (required for client-side code)
-
+import React from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useEffect, useState } from 'react';
 
@@ -22,7 +22,6 @@ export default function Home() {
   return (
     <main className='p-10'>
       <h1 className='text-2xl font-bold'>Supabase Test</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
     </main>
   );
 }
