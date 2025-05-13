@@ -6,7 +6,7 @@ import { signUpSchema } from '@/schemas/signUpSchema';
 export default function SignUpForm({ onSubmit }) {
   const [networkError, setNetworkError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   const {
     register,
     handleSubmit,
@@ -36,14 +36,36 @@ export default function SignUpForm({ onSubmit }) {
     <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
       <div>
         <label htmlFor='username'>Username</label>
-        <input id='username' {...register('username')} onBlur={() => {}} />
-        {errors.username && <p>{errors.username.message}</p>}
+        <input
+          id='username'
+          type='text'
+          autoComplete='username'
+          aria-invalid={!!errors.username}
+          aria-describedby={errors.username ? 'username-error' : undefined}
+          {...register('username')}
+        />
+        {errors.username && (
+          <p id='username-error' role='alert'>
+            {errors.username.message}
+          </p>
+        )}
       </div>
 
       <div>
         <label htmlFor='email'>Email</label>
-        <input id='email' {...register('email')} onBlur={() => {}} />
-        {errors.email && <p>{errors.email.message}</p>}
+        <input
+          id='email'
+          type='email'
+          autoComplete='email'
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'email-error' : undefined}
+          {...register('email')}
+        />
+        {errors.email && (
+          <p id='email-error' role='alert'>
+            {errors.email.message}
+          </p>
+        )}
       </div>
 
       <div>
@@ -52,10 +74,16 @@ export default function SignUpForm({ onSubmit }) {
           id='password'
           data-testid='password-input'
           type='password'
+          autoComplete='new-password'
+          aria-invalid={!!errors.password}
+          aria-describedby={errors.password ? 'password-error' : undefined}
           {...register('password')}
-          onBlur={() => {}}
         />
-        {errors.password && <p>{errors.password.message}</p>}
+        {errors.password && (
+          <p id='password-error' role='alert'>
+            {errors.password.message}
+          </p>
+        )}
       </div>
 
       <div>
@@ -64,18 +92,30 @@ export default function SignUpForm({ onSubmit }) {
           id='confirmPassword'
           data-testid='confirmPassword-input'
           type='password'
+          autoComplete='new-password'
+          aria-invalid={!!errors.confirmPassword}
+          aria-describedby={
+            errors.confirmPassword ? 'confirmPassword-error' : undefined
+          }
           {...register('confirmPassword')}
-          onBlur={() => {}}
         />
-        {errors.confirmPassword && <p>{errors.confirmPassword.message}</p>}
+        {errors.confirmPassword && (
+          <p id='confirmPassword-error' role='alert'>
+            {errors.confirmPassword.message}
+          </p>
+        )}
       </div>
 
       {networkError && (
-        <p role="alert" data-testid="network-error">{networkError}</p>
+        <p role='alert' data-testid='network-error'>
+          {networkError}
+        </p>
       )}
 
       {successMessage && (
-        <p role="alert" data-testid="success-message">{successMessage}</p>
+        <p role='alert' data-testid='success-message'>
+          {successMessage}
+        </p>
       )}
 
       <button type='submit' disabled={isSubmitting}>
@@ -83,7 +123,7 @@ export default function SignUpForm({ onSubmit }) {
       </button>
 
       {isSubmitting && (
-        <div data-testid='spinner-overlay'>
+        <div data-testid='spinner-overlay' aria-live='polite'>
           <p>Submitting...</p>
         </div>
       )}
